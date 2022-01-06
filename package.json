@@ -4,10 +4,11 @@
   "description": "A socketio stock server",
   "main": "dist/server.js",
   "scripts": {
+    "build": "tsc",
     "dev:build": "tsc -w",
     "dev:run": "nodemon ./dist/server.js",
     "dev": "concurrently npm:dev:*",
-    "start": "node .",
+    "start": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Chase & Gus",
