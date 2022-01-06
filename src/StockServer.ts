@@ -83,16 +83,19 @@ export class StockServer {
             }) */
 
             socket.on('getData', (request: {'request-type': string, symbols?: string[], start?: string}) => {
-                let response: Object = { }
+                let response: any
                 switch(request['request-type']) {
                     case 'live':
-                        const data = this.stockGen.getLiveData(request.symbols)
                         response = {
                             'response-type': 'live',
-                            data: data
+                            'new-value': this.stockGen.getLiveData(request.symbols)
                         }
                         break
                     case 'historical':
+                        response = {
+                            'response-type': 'historical',
+                            data: this.stockGen.getHistoricalData(request.symbols, request.start)
+                        }
                         break
                     case 'list':
                         response = {
@@ -100,6 +103,7 @@ export class StockServer {
                             symbols: this.stockGen.getTickers()
                         }
                         break 
+                    default:
                 }
                 socket.emit('getData', response)
             })

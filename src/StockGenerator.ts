@@ -1,3 +1,5 @@
+import { getDateFromStr } from "./Utils"
+
 export default class StockGenerator {
 
     public stocks = [
@@ -23,7 +25,7 @@ export default class StockGenerator {
         return results
     }
 
-    getOneStock = (ticker: string, timestamp: string) => {
+    getOneStock = (ticker: string, timestamp: string): Object => {
         const data = this.getHourlyData(ticker)
 
         return {
@@ -39,18 +41,30 @@ export default class StockGenerator {
     }
 
     getLiveData = (tickers: string[]): Object => {
+        let data: Object[] = []
+        for(let ticker of tickers) {
+            let index = this.getStockIndex(ticker)
+            if(index > -1) { 
+                data.push(this.getOneStock(ticker, new Date().toISOString()))
+            } else { }
+        }
+        return { data }
+    }
+
+    getHistoricalData = (tickers: string[], startDate: string): Object[] => {
+        const date: Date = getDateFromStr(startDate)
         let result: Object[] = []
         for(let ticker of tickers) {
             let index = this.getStockIndex(ticker)
             if(index > -1) { 
-                result.push(this.getOneStock(ticker, new Date().toISOString()))
+                let nextDate: Date = new Date(date)
+                for(let i = 0; i < 7; i++) {
+                    result.push(this.getOneStock(ticker, nextDate.toISOString()))
+                    nextDate.setDate(date.getDate() + 1)
+                }
             } else result.push({'error':'Ticker not available'})
         }
         return result
-    }
-
-    getHistoricalData = () => {
-
     }
 
     getTickers = (): string[] => {
