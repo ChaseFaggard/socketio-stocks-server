@@ -1,7 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import * as http from 'http'
-import SocketIO from 'socket.io'
+import SocketIO, { Socket } from 'socket.io'
 
 import StockGenerator from './StockGenerator'
 
@@ -15,7 +15,6 @@ export class StockServer {
     private port: string | number
 
     private stockGen = new StockGenerator()
-
 
     constructor() {
         this.createApp()
@@ -58,40 +57,35 @@ export class StockServer {
             /* Ping check */
             socket.on('ping', () => socket.emit('ping'))
 
-
-            socket.on('getData', (request: {'request-type': string, symbols?: string[], start?: string}) => {
-                let response: any
-                switch(request['request-type']) {
-                    case 'live':
-                        liveInterval = setInterval(() => {
-                            response = {
-                                'response-type': 'live',
-                                'new-value': this.stockGen.getLiveData(request.symbols)
-                            }
-    
-                            socket.emit('liveData', response)
-                        }, 1000 * intervalTime)
-                        break
-                    case 'historical':
-                        response = {
-                            'response-type': 'historical',
-                            data: this.stockGen.getHistoricalData(request.symbols, request.start)
-                        }
-                        socket.emit('historicalData', response)
-                        break
-                    case 'list':
-                        response = {
-                            'response-type': 'list',
-                            symbols: this.stockGen.getTickers()
-                        }
-                        socket.emit('listData', response)
-                        break 
-                    default:
-                }
+            socket.on('startLive', (symbols: string[]) => {
+                liveInterval = setInterval(() => {
+                    socket.emit('liveData', {
+                        'response-type': 'live',
+                        'new-value': this.stockGen.getLiveData(symbols)
+                    })
+                }, 1000 * intervalTime)
             })
 
+            socket.on('historicalData', (request: { symbols: string[], start: string}) => {
+                socket.emit('historicalData', {
+                    'response-type': 'historical',
+                    data: this.stockGen.getHistoricalData(request.symbols, request.start)
+                })
+            })
+
+            socket.on('listData', () => {
+                socket.emit('listData', {
+                    'response-type': 'list',
+                    symbols: this.stockGen.getTickers()
+                })
+                
+            })
+
+            /* Changes live data interval */
             socket.on('changeInterval', (interval:number) => {
                 intervalTime = interval;
+                
+                
             })
 
 
@@ -109,4 +103,5 @@ export class StockServer {
     public getApp(): express.Application {
         return this.app
     }
+    
 }
