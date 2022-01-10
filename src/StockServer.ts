@@ -16,6 +16,7 @@ export class StockServer {
 
     private stockGen = new StockGenerator()
 
+
     constructor() {
         this.createApp()
         this.config()
@@ -48,70 +49,56 @@ export class StockServer {
         })
 
         this.io.on('connect', (socket: any) => {
+            let liveInterval:NodeJS.Timer;
+            //Interval time is in seconds, since setInterval works in milliseconds
+            let intervalTime:number = 5;
+
             console.log(`New Client Connected. Id: ${socket.id}`)
 
             /* Ping check */
             socket.on('ping', () => socket.emit('ping'))
 
-            /* Request type
-            socket.on('requestType', (requestType: string) => {
-                let response: Object = { }
-                switch(requestType) {
-                    case 'list':
-                        response = {
-                            'response-type': 'list',
-                            'symbols': ['ABC', 'XYZ', 'LMNO']
-                        }
-                        break
-                    case 'historical':
-                        response = {
-                            'response-type': 'historical',
-                            'symbols': ['ABC', 'XYZ', 'LMNO'],
-                            'start': 'yyyy-MM-dd HH:mm:ss'
-                        }
-                        break
-                    case 'live':
-                        response = {
-                            'response-type': 'live',
-                            'symbols': ['ABC', 'XYZ']
-                        }
-                        break
-                    default: 
-                        break
-                }
-                socket.emit('requestType', response)
-            }) */
 
             socket.on('getData', (request: {'request-type': string, symbols?: string[], start?: string}) => {
                 let response: any
                 switch(request['request-type']) {
                     case 'live':
-                        response = {
-                            'response-type': 'live',
-                            'new-value': this.stockGen.getLiveData(request.symbols)
-                        }
+                        liveInterval = setInterval(() => {
+                            response = {
+                                'response-type': 'live',
+                                'new-value': this.stockGen.getLiveData(request.symbols)
+                            }
+    
+                            socket.emit('liveData', response)
+                        }, 1000 * intervalTime)
                         break
                     case 'historical':
                         response = {
                             'response-type': 'historical',
                             data: this.stockGen.getHistoricalData(request.symbols, request.start)
                         }
+                        socket.emit('historicalData', response)
                         break
                     case 'list':
                         response = {
                             'response-type': 'list',
                             symbols: this.stockGen.getTickers()
                         }
+                        socket.emit('listData', response)
                         break 
                     default:
                 }
-                socket.emit('getData', response)
+            })
+
+            socket.on('changeInterval', (interval:number) => {
+                intervalTime = interval;
             })
 
 
             /* Disconnect */
             socket.on('disconnect', () => {
                 console.log(`Client disconnected. ID: ${socket.id}`)
+                clearInterval(liveInterval)
             }) 
             
         })
