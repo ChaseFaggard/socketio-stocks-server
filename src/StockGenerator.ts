@@ -8,7 +8,32 @@ export default class StockGenerator {
         { "ticker": "XYZ", "value": 14.91 }
     ]
 
-    constructor() { }
+    constructor() { 
+        // Simulates live data change
+        setInterval(() => {
+            for(let i = 0; i < this.stocks.length; i++) {
+                let val = Math.random() * (this.stocks[i].value / 1500)
+                let plusMinus = Math.random() < 0.5 ? -1 : 1
+                let value = this.stocks[i].value + (val * plusMinus)
+                let roundedVal = Math.round(value * 100) / 100
+                this.stocks[i].value = roundedVal
+            }
+        }, 1000)
+    }
+
+    getLiveData = (tickers: string[]): Object => {
+        let data: Object[] = []
+        for(let ticker of tickers) {
+            let index = this.getStockIndex(ticker)
+            if(index > -1) { 
+                data.push({
+                    symbol: ticker,
+                    currentValue: this.stocks[index].value
+                })
+            } else { }
+        }
+        return data
+    }
 
     getHourlyData = (ticker: string): number[] => {
 
@@ -38,17 +63,6 @@ export default class StockGenerator {
                 close: data[data.length-1]
             }]
         }
-    }
-
-    getLiveData = (tickers: string[]): Object => {
-        let data: Object[] = []
-        for(let ticker of tickers) {
-            let index = this.getStockIndex(ticker)
-            if(index > -1) { 
-                data.push(this.getOneStock(ticker, new Date().toISOString()))
-            } else { }
-        }
-        return { data }
     }
 
     getHistoricalData = (tickers: string[], startDate: string): Object[] => {

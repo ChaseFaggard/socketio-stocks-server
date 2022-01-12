@@ -61,7 +61,7 @@ export class StockServer {
                 liveInterval = setInterval(() => {
                     socket.emit('liveData', {
                         'response-type': 'live',
-                        'new-value': this.stockGen.getLiveData(symbols)
+                        data: this.stockGen.getLiveData(symbols)
                     })
                 }, 1000 * intervalTime)
             })
@@ -83,9 +83,7 @@ export class StockServer {
 
             /* Changes live data interval */
             socket.on('changeInterval', (interval:number) => {
-                intervalTime = interval;
-                
-                
+                intervalTime = interval; 
             })
 
 
