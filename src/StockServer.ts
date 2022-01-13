@@ -58,6 +58,12 @@ export class StockServer {
             socket.on('ping', () => socket.emit('ping'))
 
             socket.on('startLive', (symbols: string[]) => {
+                /* Send it out once first */
+                socket.emit('liveData', {
+                    'response-type': 'live',
+                    data: this.stockGen.getLiveData(symbols)
+                })
+                /* Send on an interval */
                 liveInterval = setInterval(() => {
                     socket.emit('liveData', {
                         'response-type': 'live',
