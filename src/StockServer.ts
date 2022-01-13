@@ -72,10 +72,10 @@ export class StockServer {
                 }, 1000 * intervalTime)
             })
 
-            socket.on('historicalData', (request: { symbols: string[], start: string}) => {
+            socket.on('historicalData', (symbols:string[]) => {
                 socket.emit('historicalData', {
                     'response-type': 'historical',
-                    data: this.stockGen.getHistoricalData(request.symbols, request.start)
+                    data: this.stockGen.getHistoricalData(symbols)
                 })
             })
 
