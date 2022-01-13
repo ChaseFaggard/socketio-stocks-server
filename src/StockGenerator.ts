@@ -65,16 +65,20 @@ export default class StockGenerator {
         }
     }
 
-    getHistoricalData = (tickers: string[], startDate: string): Object[] => {
-        const date: Date = getDateFromStr(startDate)
+    getHistoricalData = (tickers: string[]): Object[] => {
+        /*Get a week ago*/
+        let date: Date = new Date()
+        let pastDate = date.getDate() - 7;
+        date.setDate(pastDate)
+
         let result: Object[] = []
         for(let ticker of tickers) {
             let index = this.getStockIndex(ticker)
             if(index > -1) { 
                 let nextDate: Date = new Date(date)
-                for(let i = 0; i < 7; i++) {
+                for(let i = 1; i <= 7; i++) {
                     result.push(this.getOneStock(ticker, nextDate.toISOString()))
-                    nextDate.setDate(date.getDate() + 1)
+                    nextDate.setDate(date.getDate() + i)
                 }
             } else result.push({'error':'Ticker not available'})
         }
