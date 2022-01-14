@@ -28,11 +28,12 @@ export default class StockGenerator {
 
     getLiveData = (tickers: string[]): Object => {
         let data: Object[] = []
-        for (let ticker of tickers) {
-            let index = this.getStockIndex(ticker)
+        for (let i = 0; i < tickers.length; i++) {
+            let index = this.getStockIndex(tickers[i])
             if (index > -1) {
                 data.push({
-                    symbol: ticker,
+                    name: this.stocks[index].name,
+                    symbol: this.stocks[index].ticker,
                     currentValue: this.stocks[index].value
                 })
             } else { }
@@ -74,10 +75,10 @@ export default class StockGenerator {
         date.setDate(pastDate)
 
         let result: Object[] = []
-        for (let i = 0; i < this.stocks.length; i++) {
-            let stock = this.stocks[i]
+        for (let i = 0; i < tickers.length; i++) {
             let stockData = []
-            let index = this.getStockIndex(stock.ticker)
+            let index = this.getStockIndex(tickers[i])
+            let stock = this.stocks[index]
             if (index > -1) {
                 let nextDate: Date = new Date(date)
                 for (let i = 1; i <= 365; i++) {
