@@ -54,14 +54,11 @@ export default class StockGenerator {
         const data = this.getHourlyData(ticker)
 
         return {
-            symbol: ticker,
-            data: [{
-                timestamp: timestamp,
-                open: data[0],
-                high: this.getLargest(data),
-                low: this.getSmallest(data),
-                close: data[data.length - 1]
-            }]
+            timestamp: timestamp,
+            open: data[0],
+            high: this.getLargest(data),
+            low: this.getSmallest(data),
+            close: data[data.length - 1]
         }
     }
 
@@ -85,7 +82,10 @@ export default class StockGenerator {
                     nextDate = new Date(date)
                     nextDate.setDate(date.getDate() + i)
                 }
-                result.push(stockData)
+                result.push({
+                    symbol: ticker,
+                    data: stockData
+                })
             } else result.push({ 'error': 'Ticker not available' })
         }
         return result
