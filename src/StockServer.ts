@@ -63,6 +63,8 @@ export class StockServer {
                     'response-type': 'live',
                     data: this.stockGen.getLiveData(symbols)
                 })
+                
+                clearInterval(liveInterval)
                 /* Send on an interval */
                 liveInterval = setInterval(() => {
                     socket.emit('liveData', {
