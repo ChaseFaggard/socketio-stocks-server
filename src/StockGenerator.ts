@@ -3,9 +3,14 @@ import { getDateFromStr } from "./Utils"
 export default class StockGenerator {
 
     public stocks = [
-        { "ticker": "NBR", "value": 83.72 },
-        { "ticker": "ABC", "value": 2813.41 },
-        { "ticker": "XYZ", "value": 14.91 }
+        { "name": "Nabors Industries Ltd.", "ticker": "NBR", "value": 112.72 },
+        { "name": "Apple.", "ticker": "AAPL", "value": 171.33 },
+        { "name": "Microsft", "ticker": "MSFT", "value": 306.89 },
+        { "name": "Ford Motor Company", "ticker": "F", "value": 24.84 },
+        { "name": "Bank of America Corporation", "ticker": "BAC", "value": 47.62 },
+        { "name": "AT&T Inc.", "ticker": "T", "value": 27.08 },
+        { "name": "NVIDIA Corporation", "ticker": "NVDA", "value": 267.70 },
+        { "name": "Berkshire Hathaway Inc. Class A", "ticker": "BRK-A", "value": 483687.03 }
     ]
 
     constructor() {
@@ -69,21 +74,23 @@ export default class StockGenerator {
         date.setDate(pastDate)
 
         let result: Object[] = []
-        for (let ticker of tickers) {
+        for (let i = 0; i < this.stocks.length; i++) {
+            let stock = this.stocks[i]
             let stockData = []
-            let index = this.getStockIndex(ticker)
+            let index = this.getStockIndex(stock.ticker)
             if (index > -1) {
                 let nextDate: Date = new Date(date)
                 for (let i = 1; i <= 365; i++) {
                     if(this.checkWeekend(nextDate) == true)
                     {
-                        stockData.push(this.getOneStock(ticker, nextDate.toISOString()))
+                        stockData.push(this.getOneStock(stock.ticker, nextDate.toISOString()))
                     }
                     nextDate = new Date(date)
                     nextDate.setDate(date.getDate() + i)
                 }
                 result.push({
-                    symbol: ticker,
+                    name: stock.name,
+                    symbol: stock.ticker,
                     data: stockData
                 })
             } else result.push({ 'error': 'Ticker not available' })
