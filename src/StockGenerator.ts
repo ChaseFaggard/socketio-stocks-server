@@ -1,5 +1,3 @@
-import { getDateFromStr } from "./Utils"
-
 export default class StockGenerator {
 
     public stocks = [
@@ -10,11 +8,19 @@ export default class StockGenerator {
         { "name": "Bank of America Corporation", "ticker": "BAC", "value": 47.62 },
         { "name": "AT&T Inc.", "ticker": "T", "value": 27.08 },
         { "name": "NVIDIA Corporation", "ticker": "NVDA", "value": 267.70 },
-        { "name": "Berkshire Hathaway Inc. Class A", "ticker": "BRK-A", "value": 483687.03 }
+        { "name": "Berkshire Hathaway Inc. Class A", "ticker": "BRK.A", "value": 483687.03 }
     ]
 
+    public historicalData: any[] = []
+
     constructor() {
-        // Simulates live data change
+        /* Create historical data */ 
+        for(let i = 0; i < this.stocks.length; i++) {
+            let ticker = this.stocks[i].ticker
+            this.historicalData[<any>ticker] = this.generateHistoricalData([this.stocks[i].ticker])[0]
+            this.stocks[i].value = this.historicalData[<any>ticker].data[this.historicalData[<any>ticker].data.length-1].close
+        }
+        /* Simulates live data change */
         setInterval(() => {
             for (let i = 0; i < this.stocks.length; i++) {
                 let val = Math.random() * (this.stocks[i].value / 1500)
@@ -41,23 +47,21 @@ export default class StockGenerator {
         return data
     }
 
-    getHourlyData = (ticker: string): number[] => {
-
-        const index = this.getStockIndex(ticker)
+    getHourlyData = (value: number): number[] => {
 
         let results: number[] = []
 
         for (let i = 0; i < 24; i++) {
-            let val = Math.random() * (this.stocks[index].value / 4)
+            let val = Math.random() * (value / 25)
             let plusMinus = Math.random() < 0.5 ? -1 : 1
-            results.push(this.stocks[index].value + (val * plusMinus))
+            results.push(value + (val * plusMinus))
         }
 
         return results
     }
 
-    getOneStock = (ticker: string, timestamp: string): Object => {
-        const data = this.getHourlyData(ticker)
+    getOneStock = (value: number, timestamp: string): Object => {
+        const data = this.getHourlyData(value)
 
         return {
             timestamp: timestamp,
@@ -69,6 +73,16 @@ export default class StockGenerator {
     }
 
     getHistoricalData = (tickers: string[]): Object[] => {
+        let results = []
+        for(let ticker of tickers) {
+            if(this.stocks.some(stock => stock.ticker == ticker)) {
+                results.push(this.historicalData[<any>ticker])
+            }
+        }
+        return results
+    }
+
+    generateHistoricalData = (tickers: string[]): Object[] => {
         /*Get a week ago*/
         let date: Date = new Date()
         let pastDate = date.getDate() - 365;
@@ -81,10 +95,12 @@ export default class StockGenerator {
             let stock = this.stocks[index]
             if (index > -1) {
                 let nextDate: Date = new Date(date)
+                let value = stock.value
                 for (let i = 1; i <= 365; i++) {
                     if(this.checkWeekend(nextDate) == true)
                     {
-                        stockData.push(this.getOneStock(stock.ticker, nextDate.toISOString()))
+                        stockData.push(this.getOneStock(value, nextDate.toISOString()))
+                        value = (stockData[stockData.length-1] as any).close
                     }
                     nextDate = new Date(date)
                     nextDate.setDate(date.getDate() + i)
@@ -94,7 +110,7 @@ export default class StockGenerator {
                     symbol: stock.ticker,
                     data: stockData
                 })
-            } else result.push({ 'error': 'Ticker not available' })
+            }
         }
         return result
     }
